@@ -518,7 +518,7 @@
         function showObjectSummary() {
             let objIdx = objectOrder[currentObjectIdx];
             let partner = partners[objIdx];
-            // 从实验数据中筛选该对象的所有正式试次（注意可能有练习干扰，但此时是正式阶段）
+            // 从实验数据中筛选该对象的所有正式试次
             let objTrials = experimentData.trials.filter(t => t.phase === '正式' && t.partner === partner.name);
             let totalEarnings = objTrials.reduce((sum, t) => sum + t.earnings, 0);
             document.getElementById('object-summary-content').innerHTML = 
@@ -531,17 +531,15 @@
             showFixationAndThen(() => showScreen('writing'), 'fixation1');
         });
 
+        // 修改：只检查故事内容，不再要求六个词语
         document.getElementById('writing-next').addEventListener('click', () => {
-            let words = [];
-            for (let i = 1; i <= 6; i++) {
-                let w = document.getElementById(`word${i}`).value.trim();
-                if (w === '') { alert('请填写所有六个词语'); return; }
-                words.push(w);
-            }
             let story = document.getElementById('story').value.trim();
-            if (story === '') { alert('请填写您的故事'); return; }
-            experimentData.writing.words = words;
+            if (story === '') {
+                alert('请填写您的故事');
+                return;
+            }
             experimentData.writing.story = story;
+            experimentData.writing.words = []; // 保持空数组，避免后续错误
             showFixationAndThen(() => showScreen('manipulation'), 'fixation2');
         });
 
@@ -704,8 +702,7 @@
                 '接收者评分': experimentData.manipulation.receiver,
                 '受益者评分': experimentData.manipulation.beneficiary,
                 '被帮助对象评分': experimentData.manipulation.helped,
-                '六个词语': experimentData.writing.words.join(';'),
-                '故事': experimentData.writing.story,
+                '故事': experimentData.writing.story,  // 将故事放在这里
                 '注意力检测': experimentData.attention,
                 '年龄': experimentData.demographics.age,
                 '性别': experimentData.demographics.gender
@@ -774,5 +771,3 @@
     </script>
 </body>
 </html>
-
-
