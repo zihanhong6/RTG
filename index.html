@@ -6,6 +6,7 @@
     <title>时间银行 - 受助者组</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <style>
+        /* 样式完全同上一版，为节省篇幅此处省略，实际保留所有样式 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -72,7 +73,7 @@
         .partner-type { font-size: 28px; margin-bottom: 10px; color: #2c3e50; }
         .avatar {
             width: 200px; height: 200px; border-radius: 50%;
-            margin: 10px auto 5px; /* 调整间距，为姓名留空间 */
+            margin: 10px auto 5px;
             display: flex; align-items: center; justify-content: center;
             font-size: 100px; border: 5px solid #bdc3c7;
             background-size: cover;
@@ -144,10 +145,10 @@
         <div id="welcome-screen">
             <h1>你好，欢迎参加本次实验！</h1>
             <div class="instructions">
-                <p>您会跟几位志愿者共同完成本次实验。</p>
+                <p>您会跟几位志愿者一起玩这个游戏。</p>
                 <p>每轮您有1个时间币。您可以决定：</p>
                 <p>👉 <strong>自己留着</strong>：您得1个，对方得0个。</p>
-                <p>👉 <strong>分享给志愿者</strong>：您给他的1个会变成3个。对方可以选择：</p>
+                <p>👉 <strong>分享给他</strong>：您给他的1个会变成3个。对方可以选择：</p>
                 <p>　　• 平分：每人得2个。</p>
                 <p>　　• 独吞：他得3个，您得0个。</p>
                 <p>实验结束后，您可根据赢得的时间币兑换不同价值的礼品。您的目标是尽可能获得更多的时间币。请认真对待每一次选择！</p>
@@ -229,10 +230,18 @@
                 <p>• <strong>分享给他</strong>：您给的1个会变成3个。对方选择：</p>
                 <p>　　- 平分：每人得2。</p>
                 <p>　　- 独吞：他得3，您得0。</p>
-                <p>时间币最后能换礼品，请认真选择。</p>
+                <p>时间币最后能兑换礼品，请认真选择。</p>
             </div>
             <div class="button-container">
                 <button class="button button-primary" id="rule-next">我懂了，开始练习 (J)</button>
+            </div>
+        </div>
+
+        <!-- 练习开始指导语 -->
+        <div id="practice-start-screen" class="hidden">
+            <p>先练习4次，熟悉一下。练习结果不算正式数据。</p>
+            <div class="button-container">
+                <button class="button button-primary" id="practice-start-btn">开始练习 (J)</button>
             </div>
         </div>
 
@@ -306,8 +315,7 @@
 
         <!-- 练习结束指导语 -->
         <div id="practice-end-screen" class="hidden">
-            <p>练习结束。</p>
-            <p>接下来开始正式实验，共90次。您会跟三位志愿者轮流互动。</p>
+            <p>练习结束。接下来正式实验，共180次，您会跟三位轮流玩。</p>
             <div class="button-container">
                 <button class="button button-primary" id="start-formal-btn">开始正式实验 (J)</button>
             </div>
@@ -377,7 +385,7 @@
             demographics: { age: null, gender: null }
         };
 
-        // 互动对象定义（带头像样式、姓名颜色、描述统一为“过去半年里…”）
+        // 互动对象定义
         const partners = [
             { 
                 name: '王建国', 
@@ -409,7 +417,7 @@
         ];
 
         const probabilities = [0.7, 0.5, 0.3];
-        const repetitions = 10;
+        const repetitions = 20;  // 修改1：每个概率重复20次
 
         let objectOrder = [];
         let objectTrialLists = [];
@@ -417,7 +425,7 @@
         let currentTrialInObject = 0;
         let isPractice = true;
         const practiceTrials = 4;
-        const formalTrials = 90;
+        const formalTrials = 180;  // 修改2：总正式试次180
 
         const screens = {
             welcome: document.getElementById('welcome-screen'),
@@ -465,7 +473,7 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [list[i], list[j]] = [list[j], list[i]];
             }
-            return list;
+            return list;  // 现在长度为 3*20 = 60
         }
 
         function initFormal() {
@@ -484,7 +492,7 @@
 
         function updateDecisionScreen() {
             if (isPractice) {
-                let partner = partners[2]; // 孙德明
+                let partner = partners[2];
                 document.getElementById('avatar-container').className = `avatar ${partner.colorClass}`;
                 document.getElementById('avatar-emoji').textContent = partner.emoji;
                 document.getElementById('partner-name').textContent = partner.name;
@@ -519,7 +527,7 @@
                     startTime: null
                 };
                 document.getElementById('trial-phase').textContent = '正式';
-                let globalTrialNum = currentObjectIdx * 30 + currentTrialInObject + 1;
+                let globalTrialNum = currentObjectIdx * 60 + currentTrialInObject + 1;  // 每个对象60次
                 document.getElementById('trial-count').textContent = globalTrialNum;
                 document.getElementById('total-trials').textContent = formalTrials;
                 let progressPercent = (globalTrialNum / formalTrials) * 100;
@@ -528,7 +536,7 @@
         }
 
         function recordTrial(decision, reactionTime, feedback, earnings) {
-            let globalTrialNum = isPractice ? (currentTrialInObject + 1) : (currentObjectIdx * 30 + currentTrialInObject + 1);
+            let globalTrialNum = isPractice ? (currentTrialInObject + 1) : (currentObjectIdx * 60 + currentTrialInObject + 1);
             let partnerInfo = isPractice ? partners[2] : partners[objectOrder[currentObjectIdx]];
             let trialRecord = {
                 trialNumber: globalTrialNum,
@@ -643,13 +651,15 @@
                     showScreen('practiceEnd');
                 }
             } else {
+                // 正式实验
                 currentTrialInObject++;
-                if (currentTrialInObject < 30) {
+                if (currentTrialInObject < 60) {  // 修改3：每个对象60次
                     showFixationAndThen(() => {
                         updateDecisionScreen();
                         showScreen('decision');
                     }, 'fixation1');
                 } else {
+                    // 当前对象完成，显示总结页
                     showObjectSummary();
                 }
             }
@@ -754,7 +764,6 @@
             let visible = Object.entries(screens).find(([name, el]) => !el.classList.contains('hidden'))?.[0];
             if (!visible) return;
             if (key === 'j') {
-                // 通用继续按钮
                 if (visible === 'welcome') document.getElementById('welcome-confirm').click();
                 else if (visible === 'writing') document.getElementById('writing-next').click();
                 else if (visible === 'manipulation' && !document.getElementById('manipulation-next').disabled) document.getElementById('manipulation-next').click();
@@ -787,5 +796,3 @@
     </script>
 </body>
 </html>
-
-
